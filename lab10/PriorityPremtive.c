@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-typedef struct
-{
+typedef struct {
     int pid;            // Process ID
     int arrivalTime;    // Arrival time
     int burstTime;      // Burst time
@@ -15,79 +14,59 @@ typedef struct
     int turnAroundTime; // Turnaround time
 } Process;
 
-void priorityPreemptiveScheduling(Process processes[], int n)
-{
+
+void priorityPreemptiveScheduling(Process processes[], int n) {
     int currentTime = 0, completed = 0;
     float totalWT = 0, totalTAT = 0;
-    int idleTime = 0;
     int lastFinishTime = -1;
     printf("Gantt Chart:\n");
 
-    while (completed != n)
-    {
+    while (completed != n) {
         int idx = -1;
         int highestPriority = INT_MAX;
 
-        for (int i = 0; i < n; i++)
-        {
-            if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0)
-            {
-                if (processes[i].priority < highestPriority)
-                {
+        for (int i = 0; i < n; i++) {
+            if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0) {
+                if (processes[i].priority < highestPriority) {
                     highestPriority = processes[i].priority;
                     idx = i;
                 }
-                if (processes[i].priority == highestPriority)
-                {
-                    if (processes[i].arrivalTime < processes[idx].arrivalTime)
-                    {
+                if (processes[i].priority == highestPriority) {
+                    if (processes[i].arrivalTime < processes[idx].arrivalTime) {
                         idx = i;
                     }
                 }
             }
         }
 
-        if (idx != -1)
-        {
-            if (idleTime > 0)
-            {
-                printf("| Idle for %d  ", idleTime);
-            }
-            idleTime = 0;
-            if (processes[idx].remainingTime == processes[idx].burstTime)
-            {
+        if (idx != -1) {
+            if (processes[idx].remainingTime == processes[idx].burstTime) {
                 processes[idx].startTime = currentTime;
             }
 
             processes[idx].remainingTime--;
             currentTime++;
 
-            if (processes[idx].remainingTime == 0)
-            {
+            if (processes[idx].remainingTime == 0) {
                 processes[idx].finishTime = currentTime;
                 processes[idx].turnAroundTime = processes[idx].finishTime - processes[idx].arrivalTime;
-                processes[idx].waitingTime = processes[idx].startTime - processes[idx].arrivalTime;
+                processes[idx].waitingTime = processes[idx].turnAroundTime - processes[idx].burstTime;
 
                 totalWT += processes[idx].waitingTime;
                 totalTAT += processes[idx].turnAroundTime;
                 completed++;
                 lastFinishTime = processes[idx].finishTime;
             }
-            if (processes[idx].remainingTime == 0)
-                printf("| (%d) P%d  (%d)  ",processes[idx].startTime, processes[idx].pid, currentTime);
-        }
-        else
-        {
-            // processes[idx].startTime++;
+        } else {
+                  //processes[idx].startTime++;
             currentTime++;
-            idleTime++;
         }
+        printf("| (%d)  P%d  (%d)  ", currentTime-1 , processes[idx].pid, currentTime);
     }
     printf(" | \n\n");
 
     printf("Observation Table:\nPID\tAT\tBT\tPRI\tST\tFT\tWT\tTAT\n");
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", processes[i].pid, processes[i].arrivalTime, processes[i].burstTime,
                processes[i].priority, processes[i].startTime, processes[i].finishTime, processes[i].waitingTime, processes[i].turnAroundTime);
     }
@@ -96,16 +75,14 @@ void priorityPreemptiveScheduling(Process processes[], int n)
     printf("Average Turnaround Time: %.2f\n", totalTAT / n);
 }
 
-int main()
-{
+int main() {
     int n;
     printf("Enter the number of processes: ");
     scanf("%d", &n);
 
     Process *processes = (Process *)malloc(n * sizeof(Process));
 
-    for (int i = 0; i < n; i++)
-    {
+    for (int i = 0; i < n; i++) {
         printf("\nProcess %d:\n", i + 1);
         printf("Enter Arrival Time: ");
         scanf("%d", &processes[i].arrivalTime);
